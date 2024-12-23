@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="find.css">
+    <title>Find Friends</title>
+</head>
+<body>
+    <div id="container">
+        <div id="top-bar">
+            <br>
+            <h1 id="title">Find Friends</h1>
+            <br>
+            <div id="switch">
+                <button id="all" class="active">All</button>
+                <button id="whatsapp">WhatsApp</button>
+                <button id="telegram">Telegram</button>
+            </div>
+        </div>
+        <div id="searchDiv">
+            <button id="searchBtn"><i class="fas fa-search"></i> Search for People</button>
+        </div>
+        <div id="textDiv">
+            <h2 id="text">Users</h2>
+        </div>
+        <div id="user-gridCon">
+            <!-- User profiles will be dynamically added here -->
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getDatabase, ref, set, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqgNC5BXxtHMnc-oMhQ0QhLYg18oAG3QA",
+            authDomain: "teens-f3fc7.firebaseapp.com",
+            projectId: "teens-f3fc7",
+            storageBucket: "teens-f3fc7.appspot.com",
+            messagingSenderId: "828565874604",
+            appId: "1:828565874604:web:83ce3266202b4cd4b1fc09",
+            databaseURL: "https://teens-f3fc7-default-rtdb.firebaseio.com/"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+
+        // Save user to the "online" node
+        function setOnlineStatus(uid) {
+            const userRef = ref(database, `online/${uid}`);
+            
+            // Add the user to the online node
+            set(userRef, { uid: uid, timestamp: Date.now() })
+                .then(() => console.log(`User ${uid} is now online.`))
+                .catch(error => console.error("Error updating online status:", error));
+
+            // Remove user from the "online" node when they disconnect
+            onDisconnect(userRef)
+                .remove()
+                .then(() => console.log(`User ${uid} will be removed on disconnect.`))
+                .catch(error => console.error("Error setting onDisconnect:", error));
+        }
+
+   function populateOnlineUsers() {
+    const onlineRef = ref(database, "online");
+
+    // Listen for changes in the online node
+    onValue(onlineRef, (snapshot) => {
+        const onlineUsers = snapshot.val();
+
+        // Clear the existing user grid
+        const userGridCon = document.querySelector("#user-gridCon");
+        userGridCon.innerHTML = "";
+
+        if (onlineUsers) {
+            // Iterate through the online users
+            Object.keys(onlineUsers).forEach((uid) => {
+                const userRef = ref(database, `users/${uid}`);
+
+                // Fetch user details from users/{uid}
+                onValue(userRef, (userSnapshot) => {
+                    const userData = userSnapshot.val();
+
+                    if (userData) {
+                        // Create a user card dynamically
+                        const userGrid = document.createElement("div");
+                        userGrid.id = 'user-grid';
+
+                        // Determine chat link based on chatWay property
+                        let chatLink = "#"; // Default link
+                        if (userData.chatWay && userData.chatWay.whatsappNum) {
+                            chatLink = `https://wa.me/${userData.chatWay.whatsappNum}`;
+                        } else if (userData.chatWay && userData.chatWay.telegramUsername) {
+                            chatLink = `https://t.me/${userData.chatWay.telegramUsername}`;
+                        }
+
+                        userGrid.innerHTML = `
+                            <div id="profilePicCon">
+                                <img src="${userData.profilePic || 'default.jpg'}" alt="Profile Picture" id="profilePic">
+                            </div>
+                            <div id="name">${userData.name || 'Unknown'}</div>
+                            <a href="${chatLink}" id="urlBtn" target="_blank">Chat</a>
+                        `;
+
+                        // Append the user card to the container
+                        userGridCon.appendChild(userGrid);
+                    }
+                });
+            });
+        } else {
+            userGridCon.innerHTML = "<p>No users online currently.</p>";
+        }
+    });
+}
+
+        // Authentication Functionality
+        function authenticateUser() {
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const uid = urlParams.get("uid");
+
+            if (uid) {
+                // Authenticate using UID from query parameter
+                onAuthStateChanged(auth, (user) => {
+                    if (user && user.uid === uid) {
+                        console.log("User authenticated via UID:", user);
+                        setOnlineStatus(uid); // Set the user as online
+                        populateOnlineUsers(); // Populate online users
+                    } else {
+                        console.log("Authentication failed using UID. Redirecting...");
+                        window.location.href = "login.html"; // Redirect to login page
+                    }
+                });
+            } else {
+                // Authenticate if the user is logged in
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("User authenticated via login:", user);
+                        setOnlineStatus(user.uid); // Set the user as online
+                        populateOnlineUsers(); // Populate online users
+                    } else {
+                        console.log("No logged-in user. Redirecting...");
+                        window.location.href = "login.html"; // Redirect to login page
+                    }
+                });
+            }
+        }
+
+        // Call the authentication function
+        authenticateUser();
+
+        // Button switching functionality
+        document.addEventListener("DOMContentLoaded", () => {
+            const buttons = document.querySelectorAll("#switch button");
+
+            buttons.forEach(button => {
+                button.addEventListener("click", () => {
+                    buttons.forEach(btn => btn.classList.remove("active"));
+                    button.classList.add("active");
+                });
+            });
+        });
+    </script>
+</body>
+</html>

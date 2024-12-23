@@ -1,0 +1,117 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+}
+#top-bar {
+    background-color: #ff4a2b;
+    color: white;
+    height: 115px;
+}
+#title {
+    text-align: center;
+}
+#switch {
+    display: flex;
+    justify-content: center;
+    gap: 0; /* Remove gap to ensure buttons are joined */
+}
+#all, #telegram, #whatsapp {
+    width: 117px;
+    height: 45px;
+    border: 3px solid white;
+    padding: 10px;
+    background: transparent;
+    color: white;
+    border-left: none; /* Remove duplicate borders */
+    font-size: 1.3rem;
+}
+
+#all {
+    border-top-left-radius: 5px; /* Round top-left corner */
+    border-bottom-left-radius: 5px; /* Round bottom-left corner */
+    border-left: 3px solid white; /* Restore left border for the first button */
+}
+
+#telegram {
+    border-top-right-radius: 5px; /* Round top-right corner */
+    border-bottom-right-radius: 5px; /* Round bottom-right corner */
+}
+
+#all.active, #telegram.active, #whatsapp.active {
+    background-color: white; /* Active background color */
+    color: #ff4a2b; /* Active text color */
+}
+#searchDiv {
+    background-color: #ccc;
+    height: 50px;
+    padding: 5px;
+    display: flex; /* Enables Flexbox */
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+}
+
+#searchBtn {
+    height: 45px;
+    text-align: center;
+    width: 340px;
+    color: black;
+    background-color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.5rem;
+}
+button:active {
+    transform: scale(0.98)
+}
+#textDiv {
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+}
+#user-grid {
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+    display: flex;
+
+}
+#profilePicCon {
+    height: 50px;
+    width: 50px;
+    border: none;
+    border-radius: 50%;
+    
+}
+#profilePic {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+#name {
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-left: 20px;
+    margin-top: 10px;
+}
+#urlBtn {
+    background-color: white; /* Tomato red for the button */
+  color: grey; /* White text for readability */
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 2px solid #ccc;
+  margin-left: 30px;
+  text-decoration: none; /* Remove underline for links */
+    
+}
+a:focus, a:active {
+  outline: none;
+  -webkit-tap-highlight-color: transparent; /* For mobile devices to remove the tap highlight */
+  transform: scale(0.95)
+}

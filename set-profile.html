@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Ur profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="set.css">
+</head>
+<body>
+    <div id="container">
+        <div id="profilePicDiv">
+            <h2 id="text">Upload picture to get <span id="genOp"></span> attention</h2>
+         <div id="profilePicCon"> 
+           
+    <img src="" id="profilePic" alt="" style="display: none;">
+    <i class="fas fa-plus" id="fa"></i>
+    <div class="spinner" id="spinner">Uploading...</div>     
+</div>   
+
+
+            <input type="file" id="fileInput" style="display:none" />
+            <button id="next">Next</button>
+        </div>
+        <div id="chooseTalk">
+            <h2 id="text2">
+                Choose where <span  id="genOp2"></span> can talk to you 
+            </h2>
+            <div id="telegram" class="social-option">
+    <img src="tele.png" alt="" id="tele-icon">
+    <h3 id="soc-text">Telegram</h3>
+</div>
+<div id="whatsapp" class="social-option">
+    <img src="whatapp.png" alt="" id="what-icon">
+    <h3 id="soc-text">WhatsApp</h3>
+</div>
+<button id="ok">Ok</button>
+        </div>
+        <!-- Error Modal -->
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeErrorModal()">&times;</span>
+        <h2>Error</h2>
+        <p id="errorMessage"></p>
+    </div>
+</div>
+<div id="fullScreenLoader" style="">
+    <div class="loader"></div>
+</div>
+<div id="whatsapp-add">
+          <img src="back.png" alt="back" id="backWhat">
+          <h2 id="text">My WhatsApp Number</h2>
+<br><br><br>
+          <input type="phone" name="phone" id="whatNumber" placeholder="Phone Number +1 023 4567 890" maxlength="16"><br><br><br><br>
+          <div id="noteWhat">Note this WhatsApp number will be live <br> and anyone can chat you</div><br><br>
+          <button id="findNowWhat">Find Friends</button>
+        </div>
+        <div id="telegram-add">
+            <img src="back.png" alt="back" id="backTele">
+            <h2 id="text">My Telegram Username or Number</h2><br><br>
+            <input type="username" name="username" id="teleName" placeholder="Telegram username"><br><br>
+           
+            <div id="or">or</div><br><br>
+            <input type="tell" name="number" id="teleNumber" placeholder="Phone Number +1 023 4567 890" maxlength="16"><br><br><br>
+            <div id="noteTele">Note this Telegram  number or Username will be live <br> and anyone can chat you</div><br>
+          <button id="findNowTele">Find Friends</button>
+            
+        </div>
+    </div>
+
+    <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { getDatabase, ref, update, get, set } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBqgNC5BXxtHMnc-oMhQ0QhLYg18oAG3QA",
+        authDomain: "teens-f3fc7.firebaseapp.com",
+        projectId: "teens-f3fc7",
+        storageBucket: "teens-f3fc7.appspot.com",
+        messagingSenderId: "828565874604",
+        appId: "1:828565874604:web:83ce3266202b4cd4b1fc09"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
+    const storage = getStorage();
+
+    // Function to get query parameters from the URL
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    // Check if the 'uid' query parameter exists
+    const uid = getQueryParam("uid");
+
+    // Function to fetch user data from the database
+    async function fetchUserData(uid) {
+        try {
+            const userRef = ref(db, 'users/' + uid); // Reference to the user's data
+            const snapshot = await get(userRef);
+            if (snapshot.exists()) {
+                return snapshot.val(); // Return user data
+            } else {
+                console.log("No user data available for uid:", uid);
+                return null;
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            return null;
+        }
+    }
+
+ 
+
+ 
+// Function to show the loader
+function showLoader() {
+    fullScreenLoader.style.display = "flex";
+}
+
+// Function to hide the loader
+function hideLoader() {
+    fullScreenLoader.style.display = "none";
+}
+
+// Function to open the error modal and trigger a page navigation
+function openErrorModal2(message) {
+    const errorModal = document.getElementById("errorModal");
+    const errorMessage = document.getElementById("errorMessage");
+    errorMessage.innerText = message;
+    errorModal.style.display = "block";
+    
+    // Wait for a few seconds to let the user read the message, then navigate back
+    setTimeout(() => {
+        window.history.back(); // Navigate back after a few seconds
+    }, 3000); // 3 seconds timeout, you can adjust this as needed
+}
+
+// Function to fetch user data and handle loader visibility with a timeout
+async function checkAuthentication(user) {
+    const genOp = document.getElementById("genOp");
+    const genOp2 = document.getElementById("genOp2");
+
+    // Show the loader as the data is being fetched
+    showLoader();
+
+    // Timeout to show error message after 10 seconds
+    const timeout = setTimeout(() => {
+        openErrorModal2("Data is taking too long to load. Please try again later.");
+        hideLoader();
+    }, 10000); // 10 seconds timeout
+
+    try {
+        if (uid) {
+            console.log("User authenticated via UID");
+
+            const userData = await fetchUserData(uid);
+            if (userData) {
+                const gender = userData.gender;
+
+                // Use the genOp function to set genOp and genOp2 dynamically based on gender
+                genOp.innerText = gender === "male" ? "womens" : "mens";
+                genOp2.innerText = gender === "male" ? "womens" : "mens";
+            }
+        } else if (user) {
+            console.log("User authenticated via Firebase");
+
+            const userData = await fetchUserData(user.uid);
+            if (userData) {
+                const gender = userData.gender;
+
+                // Use the genOp function to set genOp and genOp2 dynamically based on gender
+                genOp.innerText = gender === "male" ? "womens" : "mens";
+                genOp2.innerText = gender === "male" ? "womens" : "mens";
+            }
+        }
+    } catch (error) {
+        console.error("Error during authentication:", error);
+        openErrorModal2("An error occurred while fetching your data.");
+    } finally {
+        // Hide the loader after data is fetched or an error occurs
+        clearTimeout(timeout); // Clear the timeout to prevent the error modal if data is fetched
+        hideLoader();
+    }
+}
+
+ 
+
+
+    // DOM elements
+    const profilePicCon = document.getElementById("profilePicCon");
+    const profilePic = document.getElementById("profilePic");
+    const nextButton = document.getElementById("next");
+    const fileInput = document.getElementById('fileInput');
+    const fa = document.getElementById('fa');
+    const profilePicDiv = document.getElementById("profilePicDiv");
+    const chooseTalk = document.getElementById("chooseTalk");
+
+    // Handle profile picture upload
+    profilePicCon.addEventListener("click", () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    const spinner = document.getElementById("spinner");
+    const profilePic = document.getElementById("profilePic");
+    const fa = document.getElementById("fa");
+
+    if (file) {
+        spinner.style.display = "block";
+        fa.style.display = 'none'; 
+
+        const storageReference = storageRef(storage, 'profile_pics/' + file.name);
+        const uploadTask = uploadBytesResumable(storageReference, file);
+
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                // Optional: Track progress if needed
+            },
+            (error) => {
+                console.error("Error uploading file:", error);
+                openErrorModal("Error uploading profile picture.");
+                spinner.style.display = "none"; // Hide spinner on error
+            },
+            () => {
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    const user = auth.currentUser;
+                    if (user) {
+                        const userRef = ref(db, 'users/' + user.uid);
+                        update(userRef, { profilePic: downloadURL }).then(() => {
+                            profilePic.src = downloadURL;
+                            profilePic.style.display = "block";
+                            fa.style.display = 'none';
+                            spinner.style.display = "none"; // Hide spinner on success
+                        }).catch((error) => {
+                            console.error("Error updating profile picture URL:", error);
+                            spinner.style.display = "none"; // Hide spinner on database error
+                        });
+                    }
+                });
+            }
+        );
+    }
+});
+
+ // Full-screen loader element
+const fullScreenLoader = document.getElementById("fullScreenLoader");
+
+nextButton.addEventListener("click", async () => {
+    if (profilePic.style.display === "none" || !profilePic.src) {
+        openErrorModal("Please upload a profile picture before proceeding.");
+        return;
+    }
+
+    // Show full-screen loader
+    fullScreenLoader.style.display = "flex";
+
+    const user = auth.currentUser;
+    if (user) {
+        const userRef = ref(db, 'users/' + user.uid);
+
+        // Check if the profilePic URL is saved in the database
+        const snapshot = await get(userRef);
+        if (snapshot.exists() && snapshot.val().profilePic === profilePic.src) {
+            console.log("Profile picture verified in the database.");
+
+            // Proceed to the next section
+            profilePicDiv.classList.add("hide");
+            chooseTalk.style.display = "block";
+            setTimeout(() => {
+                chooseTalk.classList.add("active");
+            }, 50);
+        } else {
+            openErrorModal("Profile picture upload is not yet completed. Please try again.");
+        }
+    }
+
+    // Hide full-screen loader
+    fullScreenLoader.style.display = "none";
+});
+
+function openErrorModal(message) {
+    const errorModal = document.getElementById("errorModal");
+    const errorMessage = document.getElementById("errorMessage");
+    errorMessage.innerText = message;
+    errorModal.style.display = "block";
+}
+
+window.closeErrorModal = function() {
+    const errorModal = document.getElementById("errorModal");
+    errorModal.style.display = "none";
+}
+
+const telegramDiv = document.getElementById("telegram");
+const whatsappDiv = document.getElementById("whatsapp");
+
+// Add event listeners for Telegram and WhatsApp clicks
+telegramDiv.addEventListener("click", () => {
+    // Remove 'active' class from WhatsApp (if already selected)
+    whatsappDiv.classList.remove("active");
+    
+    // Add 'active' class to Telegram
+    telegramDiv.classList.add("active");
+});
+
+whatsappDiv.addEventListener("click", () => {
+    // Remove 'active' class from Telegram (if already selected)
+    telegramDiv.classList.remove("active");
+    
+    // Add 'active' class to WhatsApp
+    whatsappDiv.classList.add("active");
+});
+// Handle the "Ok" button click
+const okButton = document.getElementById("ok");
+
+okButton.addEventListener("click", () => {
+    // Determine which option is selected
+    const isTelegramSelected = telegramDiv.classList.contains("active");
+    const isWhatsappSelected = whatsappDiv.classList.contains("active");
+
+    // Hide the chooseTalk section and show the selected add section at the top
+    if (isTelegramSelected) {
+        // Show the Telegram add section at the top
+        document.getElementById("telegram-add").classList.add("active");
+    } else if (isWhatsappSelected) {
+        // Show the WhatsApp add section at the top
+        document.getElementById("whatsapp-add").classList.add("active");
+    }
+
+    // Slide up the chooseTalk div and hide it
+    chooseTalk.classList.add("slide-up");
+
+    // Ensure chooseTalk is hidden after the slide-up
+    setTimeout(() => {
+        chooseTalk.style.display = "none"; // Hide the chooseTalk section after the transition
+    }, 500); // Delay should match the transition duration
+});
+// Handle the back button clicks for WhatsApp and Telegram
+const backWhat = document.getElementById("backWhat");
+const backTele = document.getElementById("backTele");
+
+backWhat.addEventListener("click", () => {
+    // Hide the WhatsApp add section
+    document.getElementById("whatsapp-add").classList.remove("active");
+    // Show the chooseTalk section again and slide it back down
+    chooseTalk.classList.remove("slide-up");
+    chooseTalk.style.display = "block"; // Ensure it's visible
+});
+
+backTele.addEventListener("click", () => {
+    // Hide the Telegram add section
+    document.getElementById("telegram-add").classList.remove("active");
+    // Show the chooseTalk section again and slide it back down
+    chooseTalk.classList.remove("slide-up");
+    chooseTalk.style.display = "block"; // Ensure it's visible
+});
+const findNowWhatButton = document.getElementById("findNowWhat");
+const whatNumberInput = document.getElementById("whatNumber");
+
+// Regular expression to validate WhatsApp number (e.g., +1 234 567 890)
+const phoneNumberRegex = /^[+][1-9]{1}[0-9]{1,14}$/;
+
+findNowWhatButton.addEventListener("click", async () => {
+    const whatNumber = whatNumberInput.value.trim(); // Get the value from the input field
+
+    // Validate the WhatsApp number using regex
+    if (!whatNumber) {
+        openErrorModal("Please enter your WhatsApp number.");
+        return;
+    }
+
+    if (!phoneNumberRegex.test(whatNumber)) {
+        openErrorModal("Please enter a valid WhatsApp number (e.g., +1 234 567 890).");
+        return;
+    }
+
+    // Show the loading animation
+    fullScreenLoader.style.display = "flex"; // Assuming fullScreenLoader is your loader element
+
+    const user = auth.currentUser;
+    if (user) {
+        const userRef = ref(db, 'users/' + user.uid + '/chatWay'); // Reference to the user's chatWay
+
+        const chatWayData = {}; // This will store the updated chatWay data
+
+        // Set the WhatsApp number in the chatWay data
+        chatWayData.whatsappNum = whatNumber;
+
+        // Overwrite the chatWay with the WhatsApp number
+        await set(userRef, chatWayData) // Use set to replace the entire chatWay field
+            .then(() => {
+                console.log("WhatsApp number updated successfully.");
+                window.location.href = `findFriends.html?uid=${user.uid}`; // Redirect after successful update
+            }).catch((error) => {
+                console.error("Error updating WhatsApp number:", error);
+                openErrorModal("Error updating WhatsApp number.");
+            });
+    }
+
+    // Hide the full-screen loader after the process is complete
+    fullScreenLoader.style.display = "none";
+});
+const findNowTeleButton = document.getElementById("findNowTele");
+const teleNumberInput = document.getElementById("teleNumber");
+
+// Regular expression to validate Telegram phone number (e.g., +1 234 567 890)
+const phoneNumberRegex1 = /^[+][1-9]{1}[0-9]{1,14}$/;
+
+findNowTeleButton.addEventListener("click", async () => {
+    const teleNumber = teleNumberInput.value.trim(); // Get the value from the input field
+
+    // Validate the Telegram number using regex
+    if (!teleNumber) {
+        openErrorModal("Please enter your Telegram number.");
+        return;
+    }
+
+    if (!phoneNumberRegex1.test(teleNumber)) {
+        openErrorModal("Please enter a valid Telegram number (e.g., +1 234 567 890).");
+        return;
+    }
+
+    // Show the loading animation
+    fullScreenLoader.style.display = "flex"; // Assuming fullScreenLoader is your loader element
+
+    const user = auth.currentUser;
+    if (user) {
+        const userRef = ref(db, 'users/' + user.uid + '/chatWay'); // Reference to the user's chatWay
+
+        const chatWayData = {}; // This will store the updated chatWay data
+
+        // Set the Telegram number in the chatWay data
+        chatWayData.teleNum = teleNumber;
+
+        // Overwrite the chatWay with the Telegram number
+        await set(userRef, chatWayData) // Use set to replace the entire chatWay field
+            .then(() => {
+                console.log("Telegram number updated successfully.");
+                window.location.href = `findFriends.html?uid=${user.uid}`; // Redirect after successful update
+            }).catch((error) => {
+                console.error("Error updating Telegram number:", error);
+                openErrorModal("Error updating Telegram number.");
+            });
+    }
+
+    // Hide the full-screen loader after the process is complete
+    fullScreenLoader.style.display = "none";
+});
+    // Listen for authentication state changes
+    onAuthStateChanged(auth, (user) => {
+        checkAuthentication(user);
+    });
+</script>
+</body>
+</html>

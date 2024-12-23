@@ -1,0 +1,272 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    overflow: hidden;
+}
+body {
+    background-color: #f0f0f0;
+    font-family: 'Roboto', sans-serif;
+}
+#text {
+    text-align: center;
+    margin-top: 80px;
+}
+#profilePicCon {
+    height: 200px;
+    width: 200px;
+    border-radius: 50%;
+    background-color: #d2d2d2;
+    border: 3px solid white;
+    margin-top: 50px;
+    margin-left: 70px;
+}
+#profilePic {
+    height: 200px;
+    width: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    
+}
+.fas {
+    font-size: 5.5rem;
+    margin-left: 65px;
+    margin-top: 55px;
+}
+#next {
+    margin-top: 30px;
+     font-size: 1.2rem;
+     margin-left: 50px;
+     width: 250px;
+     border: none;
+     height: 45px;
+     border-radius: 6px;
+     background-color: #ccc;     
+     margin-top: 70px;
+}
+button:active {
+    transform: scale(0.95);
+}
+#profilePicCon:active {
+    transform: scale(0.95);
+}
+#profilePicDiv {
+  
+}
+#text2 {
+    text-align: center;
+    margin-top: 80px;
+    
+}
+#tele-icon, #what-icon {
+    height: 70px;
+    margin-left: 110px;
+    margin-top: 20px;
+    
+}
+#telegram, #whatsapp {
+    border: 3px solid #ccc;
+    border-radius: 10px;
+    width: 300px;
+    margin-top: 20px;
+    margin-left: 16px;
+    height: 150px;
+    padding: 10px;
+    justify-content: center;
+    
+}
+#soc-text {
+    font-weight: bold;
+    margin-top: 20px;
+    margin-left: 95px;
+    font-size: 1.7rem;
+    
+}
+#telegram:active, #whatsapp:active {
+    transform: scale(0.98)
+}
+#chooseTalk {
+    transform: translateX(100%);
+    opacity: 0;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    display: none; /* Hide initially */
+}
+
+#chooseTalk.active {
+    transform: translateX(0);
+    opacity: 1;
+    display: block;
+}
+
+#profilePicDiv {
+    transform: translateX(0);
+    opacity: 1;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+#profilePicDiv.hide {
+    transform: translateX(-100%);
+    opacity: 0;
+    display: none; /* Hide after animation */
+}
+/* Modal background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+}
+
+/* Modal content */
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+}
+
+/* Close button */
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#spinner {
+    margin-left: 45px;
+    font-size: 1.5rem;
+    margin-top: 90px;
+    display: none;
+}
+/* Full-screen loader */
+#fullScreenLoader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Loader animation */
+.loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid black;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+ 
+ /* Styles for active border selection */
+#telegram.active {
+    border: 3px solid blue;
+}
+
+#whatsapp.active {
+    border: 3px solid green;
+}
+
+/* Add padding or margin for the border to be visible */
+#telegram, #whatsapp {
+    padding: 10px;
+    transition: border-color 0.3s ease; /* Smooth transition */
+}
+#ok {
+    margin-top: 20px;
+     font-size: 1.2rem;
+     margin-left: 50px;
+     width: 250px;
+     border: none;
+     height: 45px;
+     border-radius: 6px;
+     background-color: #ccc;     
+     margin-top: 70px;
+}
+
+/* Add this to your set.css */
+
+#chooseTalk {
+    transition: transform 0.5s ease-in-out;
+    transform: translateY(0); /* Initially, the div is in place */
+}
+
+#chooseTalk.slide-up {
+    transform: translateY(-100%); /* Moves the div up */
+}
+
+#telegram-add, #whatsapp-add {
+    display: none;
+}
+
+#telegram-add.active, #whatsapp-add.active {
+    display: block; /* Show the selected section */
+    transform: translateY(0);
+    transition: transform 0.5s ease-in;
+}
+#backWhat, #backTele {
+    height: 30px;
+    margin-left: 5px;
+}
+input {
+    margin-left: 30px;
+    height: 45px;
+    width: 270px;
+    border: none;
+    outline: none;
+    border-radius: 6px;
+    font-size: 1.3rem;
+    padding: 10px;
+}
+label {
+    font-size: 2rem;
+    margin-left: 30px;
+    margin-top: 15px;
+}
+#noteWhat, #noteTele {
+   text-align: center;
+   font-weight: bold;
+   font-size: 0.9rem;
+   color: green;
+}
+#findNowWhat, #findNowTele {
+    margin-top: 30px;
+     font-size: 1.2rem;
+     margin-left: 50px;
+     width: 250px;
+     border: none;
+     height: 45px;
+     border-radius: 6px;
+     background-color: #ccc;     
+     margin-top: 70px;
+}
+#or {
+    text-align: center;
+}

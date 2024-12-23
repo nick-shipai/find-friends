@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Border Highlight</title>
+    <style>
+        .social-option {
+            border: 2px solid transparent;
+            padding: 10px;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            display: inline-block;
+            margin: 10px;
+            border-radius: 8px;
+        }
+        .social-option.active-telegram {
+            border-color: blue;
+        }
+        .social-option.active-whatsapp {
+            border-color: green;
+        }
+    </style>
+</head>
+<body>
+    <div id="telegram" class="social-option">Telegram</div>
+    <div id="whatsapp" class="social-option">WhatsApp</div>
+
+    <script>
+        const telegramOption = document.getElementById("telegram");
+        const whatsappOption = document.getElementById("whatsapp");
+
+        function handleSelection(selectedOption) {
+            telegramOption.classList.remove("active-telegram");
+            whatsappOption.classList.remove("active-whatsapp");
+
+            if (selectedOption === "telegram") {
+                telegramOption.classList.add("active-telegram");
+            } else if (selectedOption === "whatsapp") {
+                whatsappOption.classList.add("active-whatsapp");
+            }
+        }
+
+        telegramOption.addEventListener("click", () => handleSelection("telegram"));
+        whatsappOption.addEventListener("click", () => handleSelection("whatsapp"));
+    </script>
+</body>
+</html>

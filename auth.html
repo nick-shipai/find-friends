@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       
+    <title>Find Friends - authentication</title>
+    <link rel="stylesheet" href="auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="container">
+    
+        <div id="text">Find <span>Friends</span></div>
+        <div id="op">
+            <img src="whatapp.png" alt="" id="whaticon">
+            <img src="tele.png" alt="" id="tele">
+        </div>
+        <div id="meetText">Meet</div>
+        <button id="male">♂️ Male</button><br>
+        <button id="female">♀️ Female</button><br>
+        <label class="checkbox-container">
+        <input type="checkbox">
+        <span class="custom-checkbox"></span>
+        <span class="agree-text">I agree to this app <a href="#">Terms And Conditions</a></span>
+    </label>
+    </div>
+    <div id="set-con">
+        <div id="name-con">
+    <img src="back.png" alt="" id="back" onclick="back()"><br><br><br>
+    <h2 id="nameLabel">My name is</h2><br>
+    <input type="text" id="name" name="name" placeholder="Enter Your Name">
+    <span id="nameError" class="error-message">Name cannot be empty</span>
+    <button id="next">Next</button>
+</div>
+        <div id="age-con">
+    <img src="back.png" alt="" id="back" onclick="backAge()"><br><br><br>
+    <h2 id="ageLabel">I am</h2><br>
+    <input type="number" id="age" name="age" placeholder="Enter Your Age">
+    <span id="ageError" class="error-message">You must be at least 18 to 85 years old</span>
+    <button id="nextAge">Next</button>
+</div>
+<div id="location-con">
+    <img src="back.png" alt="" id="back" onclick="backLoca()"><br><br><br>
+    <h2 id="locLabel">My Location</h2><br>
+    <input type="text" id="locationInput" name="location" placeholder="location">
+    <button id="nextLoca">Next</button>
+</div>
+ <div id="email-con">
+            <img src="back.png" alt="" id="back" onclick="backEmail()"><br><br><br>
+            <h2 id="emailLabel">My Email</h2><br>
+            <input type="email" id="email" name="email" placeholder="Your Email">
+            <span id="emailError" class="error-message">Please enter a valid email address</span>
+            <button id="nextEmail">Next</button>
+        </div>
+
+        <div id="pass-con">
+            <img src="back.png" alt="" id="back" onclick="backPass()"><br><br><br>
+            <h2 id="passLabel">My Password</h2><br>
+            <input type="password" id="password" name="password" placeholder="Your Password">
+            <span id="passwordError" class="error-message">Password cannot be empty</span>
+            <button id="createAcc">Done</button>
+        </div>
+    </div>
+</div>
+<!-- Error Modal -->
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeErrorModal()">&times;</span>
+        <h2>Error</h2>
+        <p id="errorMessage"></p>
+    </div>
+</div>
+<!-- Loading Modal (animated drawing) -->
+<div id="loadingModal" class="modal">
+    <div class="modal-content">
+        <h2>Creating your account...</h2>
+        <div class="drawing-container">
+            <div class="drawing-roll"></div>
+        </div>
+    </div>
+</div>
+<script type="module">
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-storage.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBqgNC5BXxtHMnc-oMhQ0QhLYg18oAG3QA",
+    authDomain: "teens-f3fc7.firebaseapp.com",
+    projectId: "teens-f3fc7",
+    storageBucket: "teens-f3fc7.appspot.com",
+    messagingSenderId: "828565874604",
+    appId: "1:828565874604:web:83ce3266202b4cd4b1fc09"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
+
+// Gender selection
+let selectedGender = null;
+document.getElementById('male').addEventListener('click', () => {
+    selectedGender = 'male';
+});
+
+document.getElementById('female').addEventListener('click', () => {
+    selectedGender = 'female';
+});
+
+// Function to handle back actions
+window.back = function() {
+    document.getElementById('set-con').style.display = 'none';
+}
+
+window.backAge = function() {
+    document.getElementById('name-con').style.transform = 'translateX(0)';
+    document.getElementById('age-con').style.transform = 'translateX(100%)';
+}
+window.backPass = function() {
+    document.getElementById('email-con').style.transform = 'translateX(0)';
+    document.getElementById('pass-con').style.transform = 'translateX(100%)';
+}
+
+window.backLoca = function() {
+    document.getElementById('age-con').style.transform = 'translateX(0)';
+    document.getElementById('location-con').style.transform = 'translateX(100%)';
+}
+
+window.backEmail = function() {
+    document.getElementById('location-con').style.transform = 'translateX(0)';
+    document.getElementById('email-con').style.transform = 'translateX(100%)';
+}
+
+document.getElementById('male').addEventListener('click', function () {
+    document.getElementById('set-con').style.display = 'block';
+});
+
+document.getElementById('female').addEventListener('click', function () {
+    document.getElementById('set-con').style.display = 'block';
+});
+
+// Name validation
+document.getElementById('next').addEventListener('click', function () {
+    const nameInput = document.getElementById('name');
+    const errorMessage = document.getElementById('nameError');
+
+    if (nameInput.value.trim() === '') {
+        errorMessage.style.display = 'block';
+    } else {
+        errorMessage.style.display = 'none';
+        document.getElementById('name-con').style.transform = 'translateX(-100%)';
+        document.getElementById('age-con').style.transform = 'translateX(0)';
+    }
+});
+
+// Age validation
+const ageInput = document.getElementById('age');
+const ageError = document.getElementById('ageError');
+
+ageInput.addEventListener('input', function () {
+    const ageValue = parseInt(ageInput.value, 10);
+    if (ageValue < 18 || ageValue > 85) {
+        ageError.style.display = 'block';
+    } else {
+        ageError.style.display = 'none';
+    }
+});
+
+// Next button click event for age validation
+document.getElementById('nextAge').addEventListener('click', function () {
+    const ageValue = parseInt(ageInput.value, 10);
+    if (ageValue < 18 || ageValue > 85 || isNaN(ageValue)) {
+        showErrorModal('Please enter a valid age (between 18 and 85) to proceed.');
+    } else {
+        document.getElementById('age-con').style.transform = 'translateX(-100%)';
+        document.getElementById('location-con').style.transform = 'translateX(0)';
+        document.getElementById('location-con').style.display = 'block';
+    }
+});
+
+// Location fetch on next button click
+document.getElementById('nextLoca').addEventListener('click', function () {
+    const locationInput = document.getElementById('locationInput');
+    
+    if (locationInput.value.trim() === '') {
+        showErrorModal('Please allow location access to proceed.');
+        return;
+    }
+
+    document.getElementById('location-con').style.transform = 'translateX(-100%)';
+    document.getElementById('email-con').style.transform = 'translateX(0)';
+    document.getElementById('email-con').style.display = 'block';
+});
+
+// Get user location when the location section is displayed
+document.getElementById('location-con').style.display = 'none'; // Hide initially
+
+// Get user location when the location section is displayed
+document.getElementById('nextAge').addEventListener('click', function () {
+    const ageValue = parseInt(ageInput.value, 10);
+    if (ageValue < 18 || ageValue > 85 || isNaN(ageValue)) {
+        showErrorModal("please enter a valid age from 18 to 85");
+    } else {
+        document.getElementById('age-con').style.transform = 'translateX(-100%)';
+        document.getElementById('location-con').style.transform = 'translateX(0)';
+        document.getElementById('location-con').style.display = 'block';
+
+        fetch('http://ip-api.com/json')
+            .then(response => response.json())
+            .then(data => {
+                const country = data.country;
+                const region = data.regionName;
+                const locationInput = document.getElementById('locationInput');
+                locationInput.value = `${country}, ${region}`;
+            })
+            .catch(error => {
+                // Show error modal but don't hide the set-con section
+                showErrorModal("Error fetching location: " + error.message);
+            });
+    }
+});
+
+// Email validation
+document.getElementById('nextEmail').addEventListener('click', function () {
+    const emailInput = document.getElementById('email');
+    const emailError = document.getElementById('emailError');
+
+    if (emailInput.value.trim() === '') {
+        emailError.style.display = 'block';
+        return;
+    } else {
+        emailError.style.display = 'none';
+        document.getElementById('email-con').style.transform = 'translateX(-100%)';
+        document.getElementById('pass-con').style.transform = 'translateX(0)';
+        document.getElementById('pass-con').style.display = 'block';
+    }
+});
+
+// Function to display the error modal with a custom message
+// Function to display the error modal with a custom message
+function showErrorModal(message, isFirebaseError = false) {
+    if (isFirebaseError) {
+        document.getElementById('set-con').style.display = 'none'; // Hide the main form for Firebase errors
+    }
+    document.getElementById('errorModal').style.display = 'block'; // Show the error modal
+    document.getElementById('errorMessage').textContent = message; // Set the error message
+}
+
+// Function to close the error modal
+window.closeErrorModal = function() {
+    document.getElementById('errorModal').style.display = 'none'; // Hide the modal
+}
+
+// Signup button logic
+document.getElementById('createAcc').addEventListener('click', async function () {
+    const name = document.getElementById('name').value.trim();
+    const age = parseInt(document.getElementById('age').value.trim(), 10);
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const location = document.getElementById('locationInput').value.trim();
+
+    // Validate inputs
+    if (!name) {
+        showErrorModal("Name cannot be empty.");
+        return;
+    }
+    if (isNaN(age) || age < 18 || age > 85) {
+        showErrorModal("Please enter a valid age (between 18 and 85).");
+        return;
+    }
+    if (!email.includes('@')) {
+        showErrorModal("Please enter a valid email address.");
+        return;
+    }
+    if (!password) {
+        showErrorModal("Password cannot be empty.");
+        return;
+    }
+    if (!selectedGender) {
+        showErrorModal("Please select a gender.");
+        return;
+    }
+    if (!location) {
+        showErrorModal("Location cannot be empty.");
+        return;
+    }
+
+    try {
+        // Show loading modal
+        document.getElementById('loadingModal').style.display = 'block';
+
+        // Create Firebase user
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Save user data to the database
+        await set(ref(database, `users/${user.uid}`), {
+            name: name,
+            age: age,
+            email: email,
+            gender: selectedGender,
+            location: location 
+        });
+
+        // Redirect to profile setup page
+        window.location.href = `set-profile.html?uid=${user.uid}`;
+    } catch (error) {
+        showErrorModal(error.message, true); // Show Firebase error
+    } finally {
+        // Hide loading modal
+        document.getElementById('loadingModal').style.display = 'none';
+    }
+});
+
+        </script>
+</body>
+</html>

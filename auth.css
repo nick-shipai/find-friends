@@ -1,0 +1,300 @@
+ * {
+     margin: 0;
+     padding: 0;
+     font-family: 'Roboto', sans-serif;
+ }
+ /* Prevent text selection */
+body, #name-con {
+    user-select: none; /* Prevents text from being selected */
+}
+
+/* Disable right-click (context menu) */
+body, #name-con {
+    -webkit-user-drag: none; /* Prevents dragging of content */
+}
+
+
+ #text {
+     color: green;
+     font-family: 'Roboto', sans-serif;
+     font-size: 2.4rem;
+     font-weight: bold;
+     margin-left: 90px;
+     margin-top: 180px;
+ }
+ #text span {
+     color: blue;
+ }
+ #whaticon {
+     height: 50px;
+     margin-left: 100px;
+     margin-top: 50px;
+ }
+ #op {
+     display: flex;
+ }
+ #tele {
+     height: 45px;
+     margin-top: 52px;
+     margin-left: 55px;
+ }
+ #meetText {
+     color: #ccc;
+     margin-left: 160px;
+     margin-top: 25px;
+ }
+ #male {
+     margin-top: 30px;
+     font-size: 1.2rem;
+     margin-left: 55px;
+     width: 250px;
+     border: none;
+     height: 45px;
+     border-radius: 6px;
+ }
+ #female {
+     margin-top: 30px;
+     font-size: 1.2rem;
+     margin-left: 55px;
+     width: 250px;
+     border: none;
+     height: 45px;
+     border-radius: 6px;
+ }
+ #male:active, #female:active, #next:active {
+     transform: scale(0.95);
+ }
+   .checkbox-container {
+            display: flex;
+            align-items: center;
+            width: auto;
+            height: auto;
+            margin-top: 60px;
+            margin-left: 50px;
+        }
+
+        .checkbox-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .custom-checkbox {
+            position: relative;
+            width: 20px;
+            height: 20px;
+            background-color: #ffffff;
+            border: 2px solid #28a745; /* Green border */
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-right: 8px;
+        }
+
+        .custom-checkbox::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 3px;
+            width: 6px;
+            height: 12px;
+            border: solid #007bff; /* Blue checkmark */
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg) scale(0);
+            transition: transform 0.3s ease;
+        }
+
+        .checkbox-container:hover .custom-checkbox {
+            border-color: #218838;
+        }
+
+        .checkbox-container input:checked + .custom-checkbox::after {
+            transform: rotate(45deg) scale(1);
+        }
+
+        .agree-text {
+            font-size: 14px;
+            color: #333;
+            font-weight: normal;
+        }
+        .checkbox-container a {
+            text-decoration: none;
+            color: blue;
+        }
+      #set-con {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh; /* Occupies the full viewport height */
+    background-color: #f0f0f0; /* Optional: background color for visibility */
+    position: fixed;
+    display: none;
+    transition: transform 0.5s ease, opacity 0.5s ease; 
+     
+}
+#name-con {
+    display: block;
+}
+#age-con {
+    display: block;
+}
+#location-con {
+    display: none;
+}
+#email-con {
+    display: none;
+    
+}
+#pass-con {
+    display: none;
+}
+#back {
+    height: 30px;
+    margin-left: 10px;
+  
+}
+#nameLabel, #ageLabel, #locLabel, #emailLabel, #passLabel {
+    font-size: 2rem;
+    margin-left: 30px;
+    margin-top: 15px;
+}
+#name, #age, #locationInput, #email, #password {
+    margin-left: 30px;
+    height: 45px;
+    width: 270px;
+    border: none;
+    outline: none;
+    border-radius: 6px;
+    font-size: 1.3rem;
+    padding: 10px;
+    
+    
+}
+#next, #nextAge, #nextLoca, #nextEmail, #createAcc {
+    margin-top: 30px;
+     font-size: 1.2rem;
+     margin-left: 55px;
+     width: 250px;
+     border: none;
+     height: 45px;
+     border-radius: 6px;
+     background-color: #ccc;
+     margin-top: 350px;
+}
+/* Common styles for sliding effect */
+ #name-con, #age-con, #location-con, #pass-con {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: transform 0.5s ease;
+}
+
+#name-con {
+    transform: translateX(0);
+    z-index: 1;
+}
+
+#age-con {
+    transform: translateX(100%);
+    z-index: 0;
+}
+.error-message {
+    display: none;
+    color: red;
+    font-size: 0.9rem;
+    margin-left: 30px;
+    margin-top: 5px;
+}
+/* Modal background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+}
+
+/* Modal content */
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+}
+
+/* Close button */
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+button:active {
+    transform: scale(0.95)
+}
+/* Style for the loading modal */
+#loadingModal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    overflow: hidden;
+    text-align: center;
+    padding-top: 200px;
+}
+
+/* Center the content inside the loading modal */
+#loadingModal .modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: inline-block;
+    text-align: center;
+}
+
+/* The container that holds the drawing effect */
+.drawing-container {
+    width: 100%;
+    height: 50px;
+    position: relative;
+    display: inline-block;
+}
+
+.drawing-roll {
+    width: 40px;
+    height: 40px;
+    border: 5px solid transparent;
+    border-top: 5px solid black;
+    border-radius: 50%;
+    background-color: none; /* The "drawing" color */
+    animation: rollDrawing 0.5s linear infinite;
+    margin-left: 120px;
+    margin-top: 10px;
+}
+
+/* Keyframes for the "rolling" effect */
+@keyframes rollDrawing {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
