@@ -2,14 +2,13 @@
     margin: 0;
     padding: 0;
     font-family: 'Roboto', sans-serif;
-    overflow: hidden;
+    overflow-y: hidden;
 }
 body {
     background-color: #f0f0f0;
     font-family: 'Roboto', sans-serif;
 }
 #text {
-    text-align: center;
     margin-top: 80px;
 }
 #profilePicCon {
@@ -20,6 +19,11 @@ body {
     border: 3px solid white;
     margin-top: 50px;
     margin-left: 70px;
+
+    /* Add Flexbox for centering */
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
 }
 #profilePic {
     height: 200px;
@@ -29,9 +33,8 @@ body {
     
 }
 .fas {
-    font-size: 5.5rem;
-    margin-left: 65px;
-    margin-top: 55px;
+    font-size: 5rem;
+    
 }
 #next {
     margin-top: 30px;
@@ -147,9 +150,7 @@ button:active {
 }
 
 #spinner {
-    margin-left: 45px;
     font-size: 1.5rem;
-    margin-top: 90px;
     display: none;
 }
 /* Full-screen loader */
@@ -269,4 +270,9 @@ label {
 }
 #or {
     text-align: center;
+}
+#text-div {
+    display: flex;
+    justify-content: center;
+    align-item: center;
 }

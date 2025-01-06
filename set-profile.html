@@ -11,7 +11,9 @@
 <body>
     <div id="container">
         <div id="profilePicDiv">
+            <div id="text-div">
             <h2 id="text">Upload picture to get <span id="genOp"></span> attention</h2>
+            </div>
          <div id="profilePicCon"> 
            
     <img src="" id="profilePic" alt="" style="display: none;">
@@ -167,8 +169,8 @@ async function checkAuthentication(user) {
                 const gender = userData.gender;
 
                 // Use the genOp function to set genOp and genOp2 dynamically based on gender
-                genOp.innerText = gender === "male" ? "womens" : "mens";
-                genOp2.innerText = gender === "male" ? "womens" : "mens";
+                genOp.innerText = gender === "male" ? "girls" : "mens";
+                genOp2.innerText = gender === "male" ? "girls" : "mens";
             }
         } else if (user) {
             console.log("User authenticated via Firebase");
@@ -178,8 +180,8 @@ async function checkAuthentication(user) {
                 const gender = userData.gender;
 
                 // Use the genOp function to set genOp and genOp2 dynamically based on gender
-                genOp.innerText = gender === "male" ? "womens" : "mens";
-                genOp2.innerText = gender === "male" ? "womens" : "mens";
+                genOp.innerText = gender === "male" ? "girls" : "mens";
+                genOp2.innerText = gender === "male" ? "girls" : "mens";
             }
         }
     } catch (error) {
@@ -411,20 +413,44 @@ findNowWhatButton.addEventListener("click", async () => {
 });
 const findNowTeleButton = document.getElementById("findNowTele");
 const teleNumberInput = document.getElementById("teleNumber");
+const teleNameInput = document.getElementById("teleName");
 
 // Regular expression to validate Telegram phone number (e.g., +1 234 567 890)
 const phoneNumberRegex1 = /^[+][1-9]{1}[0-9]{1,14}$/;
 
-findNowTeleButton.addEventListener("click", async () => {
-    const teleNumber = teleNumberInput.value.trim(); // Get the value from the input field
+// Disable one input when the other is filled
+teleNumberInput.addEventListener("input", () => {
+    if (teleNumberInput.value.trim()) {
+        teleNameInput.disabled = true; // Disable username input
+    } else {
+        teleNameInput.disabled = false; // Enable username input
+    }
+});
 
-    // Validate the Telegram number using regex
-    if (!teleNumber) {
-        openErrorModal("Please enter your Telegram number.");
+teleNameInput.addEventListener("input", () => {
+    if (teleNameInput.value.trim()) {
+        teleNumberInput.disabled = true; // Disable phone number input
+    } else {
+        teleNumberInput.disabled = false; // Enable phone number input
+    }
+});
+
+findNowTeleButton.addEventListener("click", async () => {
+    const teleNumber = teleNumberInput.value.trim(); // Get the value from the phone number input field
+    const teleName = teleNameInput.value.trim(); // Get the value from the username input field
+
+    // Validate inputs
+    if (!teleNumber && !teleName) {
+        openErrorModal("Please enter your Telegram number or username.");
         return;
     }
 
-    if (!phoneNumberRegex1.test(teleNumber)) {
+    if (teleNumber && teleName) {
+        openErrorModal("You can only add either a Telegram number or username, not both.");
+        return;
+    }
+
+    if (teleNumber && !phoneNumberRegex1.test(teleNumber)) {
         openErrorModal("Please enter a valid Telegram number (e.g., +1 234 567 890).");
         return;
     }
@@ -438,17 +464,21 @@ findNowTeleButton.addEventListener("click", async () => {
 
         const chatWayData = {}; // This will store the updated chatWay data
 
-        // Set the Telegram number in the chatWay data
-        chatWayData.teleNum = teleNumber;
+        // Save only the valid input (teleNum or teleName)
+        if (teleNumber) {
+            chatWayData.teleNum = teleNumber;
+        } else if (teleName) {
+            chatWayData.teleName = teleName;
+        }
 
-        // Overwrite the chatWay with the Telegram number
+        // Overwrite the chatWay with the chosen field
         await set(userRef, chatWayData) // Use set to replace the entire chatWay field
             .then(() => {
-                console.log("Telegram number updated successfully.");
+                console.log("Telegram information updated successfully.");
                 window.location.href = `findFriends.html?uid=${user.uid}`; // Redirect after successful update
             }).catch((error) => {
-                console.error("Error updating Telegram number:", error);
-                openErrorModal("Error updating Telegram number.");
+                console.error("Error updating Telegram information:", error);
+                openErrorModal("Error updating Telegram information.");
             });
     }
 

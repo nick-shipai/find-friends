@@ -22,54 +22,57 @@
         </div>
         <div id="searchDiv">
             <button id="searchBtn"><i class="fas fa-search"></i> Search for People</button>
+             <input type="search" id="search" placeholder="SEARCH FOR COUNTRIES AND NAME">
         </div>
         <div id="textDiv">
             <h2 id="text">Users</h2>
         </div>
         <div id="user-gridCon">
-            <!-- User profiles will be dynamically added here -->
+            <!-- User profiles will be dynamically
+             added here -->
+             <p>Loading...</p>
         </div>
     </div>
 
     <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-        import { getDatabase, ref, set, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+  // Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+import { getDatabase, ref, set, onDisconnect, onValue } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBqgNC5BXxtHMnc-oMhQ0QhLYg18oAG3QA",
-            authDomain: "teens-f3fc7.firebaseapp.com",
-            projectId: "teens-f3fc7",
-            storageBucket: "teens-f3fc7.appspot.com",
-            messagingSenderId: "828565874604",
-            appId: "1:828565874604:web:83ce3266202b4cd4b1fc09",
-            databaseURL: "https://teens-f3fc7-default-rtdb.firebaseio.com/"
-        };
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBqgNC5BXxtHMnc-oMhQ0QhLYg18oAG3QA",
+    authDomain: "teens-f3fc7.firebaseapp.com",
+    projectId: "teens-f3fc7",
+    storageBucket: "teens-f3fc7.appspot.com",
+    messagingSenderId: "828565874604",
+    appId: "1:828565874604:web:83ce3266202b4cd4b1fc09",
+    databaseURL: "https://teens-f3fc7-default-rtdb.firebaseio.com/"
+};
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
 
-        // Save user to the "online" node
-        function setOnlineStatus(uid) {
-            const userRef = ref(database, `online/${uid}`);
-            
-            // Add the user to the online node
-            set(userRef, { uid: uid, timestamp: Date.now() })
-                .then(() => console.log(`User ${uid} is now online.`))
-                .catch(error => console.error("Error updating online status:", error));
+// Save user to the "online" node
+function setOnlineStatus(uid) {
+    const userRef = ref(database, `online/${uid}`);
 
-            // Remove user from the "online" node when they disconnect
-            onDisconnect(userRef)
-                .remove()
-                .then(() => console.log(`User ${uid} will be removed on disconnect.`))
-                .catch(error => console.error("Error setting onDisconnect:", error));
-        }
+    // Add the user to the online node
+    set(userRef, { uid: uid, timestamp: Date.now() })
+        .then(() => console.log(`User ${uid} is now online.`))
+        .catch(error => console.error("Error updating online status:", error));
 
-   function populateOnlineUsers() {
+    // Remove user from the "online" node when they disconnect
+    onDisconnect(userRef)
+        .remove()
+        .then(() => console.log(`User ${uid} will be removed on disconnect.`))
+        .catch(error => console.error("Error setting onDisconnect:", error));
+}
+
+function populateOnlineUsers(filterType = "", searchQuery = "") {
     const onlineRef = ref(database, "online");
 
     // Listen for changes in the online node
@@ -90,28 +93,61 @@
                     const userData = userSnapshot.val();
 
                     if (userData) {
+                        // Check if the user matches the filter type (WhatsApp or Telegram)
+                        if (filterType && !userData.chatWay) return;
+                        if (filterType === "whatsapp" && !userData.chatWay.whatsappNum) return;
+                        if (filterType === "telegram" && !userData.chatWay.teleNum && !userData.chatWay.teleName) return;
+
+                        // Check if the user matches the search query
+                        const lowerCaseQuery = searchQuery.toLowerCase();
+                        const userLocation = userData.location?.toLowerCase() || "";
+                        const userName = userData.name?.toLowerCase() || "";
+
+                        // Check for similar matches in location or name
+                        const matchesLocation = lowerCaseQuery.includes(userLocation) || userLocation.includes(lowerCaseQuery);
+                        const matchesName = userName.includes(lowerCaseQuery);
+
+                        if (searchQuery && !(matchesLocation || matchesName)) return;
+
                         // Create a user card dynamically
                         const userGrid = document.createElement("div");
                         userGrid.id = 'user-grid';
 
                         // Determine chat link based on chatWay property
                         let chatLink = "#"; // Default link
-                        if (userData.chatWay && userData.chatWay.whatsappNum) {
-                            chatLink = `https://wa.me/${userData.chatWay.whatsappNum}`;
-                        } else if (userData.chatWay && userData.chatWay.telegramUsername) {
-                            chatLink = `https://t.me/${userData.chatWay.telegramUsername}`;
+                        let chatBtnClass = ""; // Default button class
+                        if (userData.chatWay) {
+                            if (userData.chatWay.teleNum) {
+                                chatLink = `https://t.me/${userData.chatWay.teleNum}`;
+                                chatBtnClass = "telegram";
+                            } else if (userData.chatWay.whatsappNum) {
+                                chatLink = `https://wa.me/${userData.chatWay.whatsappNum}`;
+                                chatBtnClass = "whatsapp";
+                            } else if (userData.chatWay.teleName) {
+                                let teleName = userData.chatWay.teleName.replace(/^@/, "");
+                                chatLink = `https://t.me/${teleName}`;
+                                chatBtnClass = "telegram";
+                            }
                         }
 
-                        userGrid.innerHTML = `
-                            <div id="profilePicCon">
-                                <img src="${userData.profilePic || 'default.jpg'}" alt="Profile Picture" id="profilePic">
-                            </div>
-                            <div id="name">${userData.name || 'Unknown'}</div>
-                            <a href="${chatLink}" id="urlBtn" target="_blank">Chat</a>
-                        `;
+                    // Inside the populateOnlineUsers function, after creating the userGrid element:
+userGrid.innerHTML = `
+    <div id="profilePicCon">
+        <a href="view_profile.html?uid=${uid}" id="profilePicLink">
+            <img src="${userData.profilePic || 'default.jpg'}" alt="Profile Picture" id="profilePic">
+        </a>
+    </div>
+    <div id="name">${userData.name || 'Unknown'}</div>
+    <a href="${chatLink}" id="urlBtn" class="${chatBtnClass}" target="_blank">Chat</a>
+`;
 
-                        // Append the user card to the container
-                        userGridCon.appendChild(userGrid);
+// Add a click event listener for redirection
+userGrid.addEventListener('click', function() {
+    window.location.href = `view_profile.html?uid=${uid}`;
+});
+
+// Append the user card to the container
+userGridCon.appendChild(userGrid);
                     }
                 });
             });
@@ -121,53 +157,84 @@
     });
 }
 
-        // Authentication Functionality
-        function authenticateUser() {
-            const queryString = window.location.search;
-            const urlParams = new URLSearchParams(queryString);
-            const uid = urlParams.get("uid");
+// Authentication Functionality
+function authenticateUser() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const uid = urlParams.get("uid");
 
-            if (uid) {
-                // Authenticate using UID from query parameter
-                onAuthStateChanged(auth, (user) => {
-                    if (user && user.uid === uid) {
-                        console.log("User authenticated via UID:", user);
-                        setOnlineStatus(uid); // Set the user as online
-                        populateOnlineUsers(); // Populate online users
-                    } else {
-                        console.log("Authentication failed using UID. Redirecting...");
-                        window.location.href = "login.html"; // Redirect to login page
-                    }
-                });
+    if (uid) {
+        // Authenticate using UID from query parameter
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.uid === uid) {
+                console.log("User authenticated via UID:", user);
+                setOnlineStatus(uid); // Set the user as online
+                populateOnlineUsers(); // Populate online users
             } else {
-                // Authenticate if the user is logged in
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        console.log("User authenticated via login:", user);
-                        setOnlineStatus(user.uid); // Set the user as online
-                        populateOnlineUsers(); // Populate online users
-                    } else {
-                        console.log("No logged-in user. Redirecting...");
-                        window.location.href = "login.html"; // Redirect to login page
-                    }
-                });
+                console.log("Authentication failed using UID. Redirecting...");
+                window.location.href = "login.html"; // Redirect to login page
             }
-        }
-
-        // Call the authentication function
-        authenticateUser();
-
-        // Button switching functionality
-        document.addEventListener("DOMContentLoaded", () => {
-            const buttons = document.querySelectorAll("#switch button");
-
-            buttons.forEach(button => {
-                button.addEventListener("click", () => {
-                    buttons.forEach(btn => btn.classList.remove("active"));
-                    button.classList.add("active");
-                });
-            });
         });
-    </script>
+    } else {
+        // Authenticate if the user is logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("User authenticated via login:", user);
+                setOnlineStatus(user.uid); // Set the user as online
+                populateOnlineUsers(); // Populate online users
+            } else {
+                console.log("No logged-in user. Redirecting...");
+                window.location.href = "auth.html"; // Redirect to login page
+            }
+        });
+    }
+}
+
+// Call the authentication function
+authenticateUser();
+
+// Button switching functionality
+document.addEventListener("DOMContentLoaded", () => {
+    const buttons = document.querySelectorAll("#switch button");
+
+    // Add event listener to the button switch
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+            // Remove the active class from all buttons
+            buttons.forEach(btn => btn.classList.remove("active"));
+            // Add the active class to the clicked button
+            button.classList.add("active");
+
+            // Fetch users based on the selected button
+            if (button.id === "whatsapp") {
+                populateOnlineUsers("whatsapp"); // Show only WhatsApp users
+            } else if (button.id === "telegram") {
+                populateOnlineUsers("telegram"); // Show only Telegram users
+            } else {
+                populateOnlineUsers(); // Show all users
+            }
+        });
+    });
+});
+const searchBtn = 
+document.getElementById('searchBtn');
+const search = 
+document.getElementById('search');
+searchBtn.addEventListener('click', function() {
+    searchBtn.style.display = 'none';
+    search.style.display = 'block';
+})
+const searchInput = document.getElementById("search");
+
+searchInput.addEventListener("input", (event) => {
+    const query = event.target.value.trim();
+    populateOnlineUsers("", query); // Pass the query to filter users
+});
+search.addEventListener('dblclick', function() {
+    searchBtn.style.display = 'block';
+    search.style.display = 'none';
+});
+
+</script>
 </body>
 </html>

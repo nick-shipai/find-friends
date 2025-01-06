@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="title">Profile</title>
+    <link rel="stylesheet" href="view_profile.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <section id="container">
+        <div id="backBtn">
+            <i class="fas fa-arrow-left" id="back"></i>
+        </div>
+        <div id="profilePicDiv">
+            <img src="profile.jpg" alt="profile-picture" id="profilePic">
+        </div>
+        <div id="downDiv">
+            <div id="name">_ _</div>
+            <div id="age"><span>Age: </span>_ _</div>
+            <div id="location"><span>Location: </span>_ _</div>
+            <div id="likeAndChat">
+                <a href="#" id="urlBtn">Chat</a>
+                <div id="likeDiv">
+                    <i class="fas fa-heart" id="like"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+    import { getDatabase, ref, get, set, remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBqgNC5BXxtHMnc-oMhQ0QhLYg18oAG3QA",
+        authDomain: "teens-f3fc7.firebaseapp.com",
+        projectId: "teens-f3fc7",
+        storageBucket: "teens-f3fc7.appspot.com",
+        messagingSenderId: "828565874604",
+        appId: "1:828565874604:web:83ce3266202b4cd4b1fc09",
+        databaseURL: "https://teens-f3fc7-default-rtdb.firebaseio.com/"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Function to fetch user data by UID
+    function fetchUserData(uid) {
+        const userRef = ref(database, 'users/' + uid);
+        get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                updateProfilePage(userData);
+                setupChatLink(userData.chatWay);
+            } else {
+                console.log("No data available for this UID.");
+            }
+        }).catch((error) => {
+            console.error("Error fetching data:", error);
+        });
+    }
+
+    // Update the profile page with the fetched data
+    function updateProfilePage(data) {
+        document.getElementById("name").textContent = data.name || "Unknown Name";
+        document.getElementById("title").textContent = data.name || "Unknown Name";
+        document.getElementById("profilePic").src = data.profilePic || ".jpg";
+        document.getElementById("age").innerHTML = `<span>Age: </span>${data.age || "Unknown Age"}`;
+        document.getElementById("location").innerHTML = `<span>Location: </span>${data.location || "Unknown Location"}`;
+    }
+
+    // Set up the chat link based on the chatWay data
+    function setupChatLink(chatWay) {
+        const urlBtn = document.getElementById("urlBtn");
+
+        if (chatWay) {
+            if (chatWay.teleName) {
+                // Redirect to Telegram
+                urlBtn.href = `https://t.me/${chatWay.teleName}`;
+                urlBtn.style.backgroundColor = "blue";
+                urlBtn.style.color = "white";
+            } else if (chatWay.whatsappNum) {
+                // Redirect to WhatsApp
+                urlBtn.href = `https://wa.me/${chatWay.whatsappNum}`;
+                urlBtn.style.backgroundColor = "green";
+                urlBtn.style.color = "white";
+            } else {
+                // No chat method, keep the button normal
+                urlBtn.href = "#";
+                urlBtn.style.backgroundColor = "";
+                urlBtn.style.color = "";
+            }
+        }
+    }
+
+    // Extract UID from the query string
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+
+   // Inside the onAuthStateChanged function
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // User is signed in, fetch their profile
+        if (uid) {
+            fetchUserData(uid);
+        } else {
+            console.log("UID is missing from the query string.");
+        }
+
+        // Get like button and current user UID
+        const likeBtn = document.getElementById('like');
+        const currentUserUID = user.uid; // Current authenticated user's UID
+        const likesRef = ref(database, 'users/' + uid + '/likes/' + currentUserUID);
+
+        // Check if the user already liked this profile
+        get(likesRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                // If the user already liked, change the like button color to red
+                likeBtn.style.color = "red";
+            } else {
+                // Otherwise, make sure the like button is in default state
+                likeBtn.style.color = "";
+            }
+        }).catch((error) => {
+            console.error("Error checking like status:", error);
+        });
+
+        // Function to show like icons (common for both double click and button click)
+        function showLikeIcons() {
+            // Create multiple like icons dynamically
+            for (let i = 0; i < 5; i++) {
+                let likeIcon = document.createElement('i');
+                likeIcon.classList.add('fas', 'fa-heart', 'floating-like-icon');
+                
+                // Set a random position for each like icon
+                likeIcon.style.left = `${Math.random() * 100}%`;
+                likeIcon.style.top = `${Math.random() * 100}%`;
+                
+                // Append the like icon to the body
+                document.body.appendChild(likeIcon);
+
+                // Remove the like icon after animation completes (1.5s duration)
+                setTimeout(() => {
+                    likeIcon.remove();
+                }, 1500);
+            }
+        }
+
+        // Double-click event to show like icons and toggle like state
+        document.addEventListener('dblclick', function() {
+            showLikeIcons(); // Show like icons animation
+
+            // Add or remove the like based on its current state
+            get(likesRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    // User has already liked, so remove the like
+                    remove(likesRef).then(() => {
+                        console.log("Like removed successfully.");
+                        likeBtn.style.color = ""; // Reset the like button color
+                    }).catch((error) => {
+                        console.error("Error removing like:", error);
+                    });
+                } else {
+                    // User has not liked, so add a like
+                    set(likesRef, {
+                        uid: currentUserUID,
+                        timestamp: Date.now()
+                    }).then(() => {
+                        console.log("Like saved successfully.");
+                        likeBtn.style.color = "red"; // Change the like button color to red
+                    }).catch((error) => {
+                        console.error("Error saving like:", error);
+                    });
+                }
+            }).catch((error) => {
+                console.error("Error checking like status:", error);
+            });
+        });
+
+        // Like button click event to toggle like state
+        likeBtn.addEventListener('click', function() {
+            showLikeIcons(); // Show like icons animation when clicked
+
+            // Add or remove the like based on its current state
+            get(likesRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    // User has already liked, so remove the like
+                    remove(likesRef).then(() => {
+                        console.log("Like removed successfully.");
+                        likeBtn.style.color = ""; // Reset the like button color
+                    }).catch((error) => {
+                        console.error("Error removing like:", error);
+                    });
+                } else {
+                    // User has not liked, so add a like
+                    set(likesRef, {
+                        uid: currentUserUID,
+                        timestamp: Date.now()
+                    }).then(() => {
+                        console.log("Like saved successfully.");
+                        likeBtn.style.color = "red"; // Change the like button color to red
+                    }).catch((error) => {
+                        console.error("Error saving like:", error);
+                    });
+                }
+            }).catch((error) => {
+                console.error("Error checking like status:", error);
+            });
+        });
+
+    } else {
+        // User is not signed in, redirect to login page
+        window.location.href = "auth.html"; // Replace with your login page URL
+    }
+});
+</script>
+</body>
+</html>

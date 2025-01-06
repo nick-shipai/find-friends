@@ -6,7 +6,7 @@
 #top-bar {
     background-color: #ff4a2b;
     color: white;
-    height: 115px;
+    height: 130px;
 }
 #title {
     text-align: center;
@@ -60,6 +60,8 @@
     border: none;
     border-radius: 5px;
     font-size: 1.5rem;
+   
+    
 }
 button:active {
     transform: scale(0.98)
@@ -79,7 +81,7 @@ button:active {
 #profilePicCon {
     height: 50px;
     width: 50px;
-    border: none;
+    border: 2px solid #d2d2d2;
     border-radius: 50%;
     
 }
@@ -94,6 +96,13 @@ button:active {
     font-size: 1.5rem;
     margin-left: 20px;
     margin-top: 10px;
+    white-space: normal; /* Allow text to wrap */
+    word-wrap: break-word; /* Break long words to fit the container */
+    overflow: hidden; /* Hide any overflow */
+    display: -webkit-box; 
+    -webkit-line-clamp: 10; /* Limit text to 10 lines */
+    -webkit-box-orient: vertical; /* Ensures proper box orientation */
+    text-overflow: ellipsis; /* Add ellipsis when text is clipped */
 }
 #urlBtn {
     background-color: white; /* Tomato red for the button */
@@ -103,9 +112,9 @@ button:active {
   font-weight: bold;
   text-transform: uppercase;
   border: none;
-  border-radius: 5px;
+  border-radius: 30px;
   cursor: pointer;
-  border: 2px solid #ccc;
+  border: 2px solid white;
   margin-left: 30px;
   text-decoration: none; /* Remove underline for links */
     
@@ -114,4 +123,23 @@ a:focus, a:active {
   outline: none;
   -webkit-tap-highlight-color: transparent; /* For mobile devices to remove the tap highlight */
   transform: scale(0.95)
+}
+#urlBtn.telegram {
+    background-color: blue;
+    color: white;
+}
+
+#urlBtn.whatsapp {
+    background-color: green;
+    color: white;
+}
+#search {
+    height: 100%;
+    width: 100%;
+    outline: none;
+    border: none;
+    font-size: 1.2rem;
+    background: none;
+    text-align: center;    
+    display: none;
 }
